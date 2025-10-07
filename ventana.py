@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 
 
 app = Tk()
+app.title('Memorama')
 # asignamos valores por si los queremos cambiar
 w = 800
 h = 800
