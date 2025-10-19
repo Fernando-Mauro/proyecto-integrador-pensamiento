@@ -1,3 +1,4 @@
-hola = "mundo"
+from menu import launch_menu
 
-adios = "cruel"
+if __name__ == "__main__":
+	launch_menu()

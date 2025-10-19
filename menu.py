@@ -1,114 +1,96 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, simpledialog
 from PIL import Image, ImageTk
 from tkinter import font
 
-app = Tk()
-app.title('Menu Memorama')
-# asignamos valores por si los queremos cambiar
-w = 800
-h = 800
-app.geometry(f"{w}x{h}")
-
-frame = LabelFrame(
-    app
-)
-
-# imagen de fondo
-image = Image.open('photos/nubes.jpg')
-image = image.resize((800, 800))
-bg_image = ImageTk.PhotoImage(image)
-
-bg_label = Label(frame, image=bg_image)
-bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-# configurar columnas
-for i in range(3): 
-    frame.columnconfigure(i, weight=1)
-
-# configurar rows
-frame.rowconfigure(0, weight = 3)
-frame.rowconfigure(1, weight = 1)
-frame.rowconfigure(2, weight = 1)
-frame.rowconfigure(3, weight = 1)
-frame.rowconfigure(4, weight=1)
+from ventana import GameWindow
+from scores import read_scores
 
 
-        
-frame.pack(
-    expand=True, 
-    fill=BOTH, 
-)
+class ScoresWindow(Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Puntajes máximos")
+        self.geometry("500x400")
+        self.configure(bg="#0f172a")
 
-# asignamos en variables los paddings internos de los botones
-bipady = 10
-bipadx = 100
+        title = Label(self, text="Puntajes máximos", fg="#e2e8f0", bg="#0f172a", font=("Lato", 18, "bold"))
+        title.pack(pady=12)
 
-label = Label(
-    frame, 
-    text = "Compurama!", 
-    font=("Lato", 40)
-)
+        cols = ("Jugador", "Puntaje")
+        tree = ttk.Treeview(self, columns=cols, show="headings", height=12)
+        for c in cols:
+            tree.heading(c, text=c)
+            tree.column(c, anchor=CENTER, width=220)
+        tree.pack(expand=True, fill=BOTH, padx=12, pady=12)
 
-label.grid(
-    column = 1, 
-    row = 0, 
-    ipady=25, 
-    pady=(0, 35),
-    sticky='sew'
-)
-
-empezar = Button(
-    frame, 
-    text="Empezar", 
-)
-
-empezar.grid(
-    column = 1, 
-    row = 1, 
-    ipady = bipady, 
-    ipadx = bipadx,
-    sticky='nswe', 
-    pady = 20, 
-    
-)
-
-puntajes = Button(
-    frame, 
-    text="Puntajes maximos", 
-)
-
-puntajes.grid(
-    column = 1, 
-    row = 2, 
-    ipady = bipady, 
-    ipadx = bipadx, 
-    sticky='nswe', 
-    pady = 20, 
-
-)
-
-salir = Button(
-    frame, 
-    text="Salir", 
-)
-
-salir.grid(
-    column = 1, 
-    row = 3, 
-    ipady = bipady, 
-    ipadx = bipadx, 
-    sticky='nswe', 
-    pady = 20, 
+        # populate
+        scores = read_scores()
+        for name, score in scores.items():
+            tree.insert("", END, values=(name, score))
 
 
-)
+def launch_menu():
+    app = Tk()
+    app.title('Menu Memorama')
+    w, h = 800, 800
+    app.geometry(f"{w}x{h}")
 
-# declaramos fuentes
-fuente = font.Font(family='Lato', size=12)
-botones = [empezar, puntajes, salir]
-for boton in botones: 
-    boton.config(font=fuente)
+    frame = Frame(app, bg="#0f172a")
+
+    # fondo opcional
+    try:
+        image = Image.open('photos/nubes.jpg').resize((w, h))
+        bg_image = ImageTk.PhotoImage(image)
+        bg_label = Label(frame, image=bg_image)
+        bg_label.image = bg_image
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+    except Exception:
+        pass
+
+    for i in range(3):
+        frame.columnconfigure(i, weight=1)
+
+    frame.rowconfigure(0, weight=3)
+    for r in (1, 2, 3):
+        frame.rowconfigure(r, weight=1)
+
+    frame.pack(expand=True, fill=BOTH)
+
+    bipady = 10
+    bipadx = 100
+
+    label = Label(frame, text="Compurama!", font=("Lato", 40), fg="#e2e8f0", bg="#0f172a")
+    label.grid(column=1, row=0, ipady=25, pady=(0, 35), sticky='sew')
+
+    # store player name on the root to ask only once per session
+    app.player_name = None
+
+    def start_game():
+        if not app.player_name:
+            name = simpledialog.askstring("Jugador", "Ingresa tu nombre para guardar tu puntaje:", parent=app)
+            app.player_name = (name or "Invitado").strip() or "Invitado"
+        GameWindow(app, grid_size=4, player_name=app.player_name)
+
+    def open_scores():
+        ScoresWindow(app)
+
+    empezar = Button(frame, text="Empezar", command=start_game, bg="#22c55e", fg="white", activebackground="#16a34a")
+    empezar.grid(column=1, row=1, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
+
+    puntajes = Button(frame, text="Puntajes máximos", command=open_scores, bg="#3b82f6", fg="white", activebackground="#2563eb")
+    puntajes.grid(column=1, row=2, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
+
+    salir = Button(frame, text="Salir", command=app.destroy, bg="#ef4444", fg="white", activebackground="#dc2626")
+    salir.grid(column=1, row=3, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
+
+    fuente = font.Font(family='Lato', size=12)
+    for b in (empezar, puntajes, salir):
+        b.config(font=fuente)
+
+    app.mainloop()
 
 
-app.mainloop()
+if __name__ == "__main__":
+    launch_menu()
 
