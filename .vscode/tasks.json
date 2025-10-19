@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run unit tests",
+			"type": "shell",
+			"command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+			"isBackground": false,
+			"problemMatcher": [
+				"$python"
+			],
+			"group": "test"
+		}
+	]
+}
