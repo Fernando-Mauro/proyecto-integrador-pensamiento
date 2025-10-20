@@ -17,17 +17,18 @@ class ScoresWindow(Toplevel):
         title = Label(self, text="Puntajes máximos", fg="#e2e8f0", bg="#0f172a", font=("Lato", 18, "bold"))
         title.pack(pady=12)
 
-        cols = ("Jugador", "Puntaje")
+        cols = ("Jugador", "Puntaje", "Dificultad")
         tree = ttk.Treeview(self, columns=cols, show="headings", height=12)
         for c in cols:
             tree.heading(c, text=c)
-            tree.column(c, anchor=CENTER, width=220)
+            width = 160 if c == "Dificultad" else 160
+            tree.column(c, anchor=CENTER, width=width)
         tree.pack(expand=True, fill=BOTH, padx=12, pady=12)
 
         # populate
         scores = read_scores()
-        for name, score in scores.items():
-            tree.insert("", END, values=(name, score))
+        for entry in scores:
+            tree.insert("", END, values=(entry.get("name"), entry.get("score"), entry.get("difficulty")))
 
 
 def launch_menu():
@@ -40,7 +41,7 @@ def launch_menu():
 
     # fondo opcional
     try:
-        image = Image.open('photos/fondo.jpeg').resize((w, h))
+        image = Image.open('./photos/nubes.jpg').resize((w, h))
         bg_image = ImageTk.PhotoImage(image)
         bg_label = Label(frame, image=bg_image)
         bg_label.image = bg_image
@@ -65,24 +66,41 @@ def launch_menu():
 
     # store player name on the root to ask only once per session
     app.player_name = None
+    # difficulty selection
+    diff_var = StringVar(value="dificil")  # default 6x6
+
+    def _grid_for_diff(d: str) -> int:
+        d = (d or "").lower()
+        return 4 if d == "facil" else 5 if d == "medio" else 6
 
     def start_game():
         if not app.player_name:
             name = simpledialog.askstring("Jugador", "Ingresa tu nombre para guardar tu puntaje:", parent=app)
             app.player_name = (name or "Invitado").strip() or "Invitado"
-        GameWindow(app, grid_size=6, player_name=app.player_name)
+        gs = _grid_for_diff(diff_var.get())
+        GameWindow(app, grid_size=gs, player_name=app.player_name)
 
     def open_scores():
         ScoresWindow(app)
 
+    # Difficulty radio buttons
+    diff_frame = Frame(frame, bg="#0f172a")
+    diff_frame.grid(column=1, row=1, sticky='nswe')
+    Label(diff_frame, text="Dificultad:", bg="#0f172a", fg="#e2e8f0", font=("Lato", 12, "bold")).pack(pady=(0,6))
+    rb1 = ttk.Radiobutton(diff_frame, text="Fácil (4x4)", value="facil", variable=diff_var)
+    rb2 = ttk.Radiobutton(diff_frame, text="Medio (5x5)", value="medio", variable=diff_var)
+    rb3 = ttk.Radiobutton(diff_frame, text="Difícil (6x6)", value="dificil", variable=diff_var)
+    for rb in (rb1, rb2, rb3):
+        rb.pack(anchor=CENTER, pady=2)
+
     empezar = Button(frame, text="Empezar", command=start_game, bg="#0f172a", fg="white", activebackground="#16a34a")
-    empezar.grid(column=1, row=1, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
+    empezar.grid(column=1, row=2, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
 
     puntajes = Button(frame, text="Puntajes máximos", command=open_scores, bg="#0f172a", fg="white", activebackground="#2563eb")
-    puntajes.grid(column=1, row=2, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
+    puntajes.grid(column=1, row=3, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
 
     salir = Button(frame, text="Salir", command=app.destroy, bg="#0f172a", fg="white", activebackground="#dc2626")
-    salir.grid(column=1, row=3, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
+    salir.grid(column=1, row=4, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
 
     fuente = font.Font(family='Lato', size=12)
     for b in (empezar, puntajes, salir):

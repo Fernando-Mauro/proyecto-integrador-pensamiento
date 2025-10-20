@@ -18,13 +18,14 @@ class GameWindow(Toplevel):
         self.grid_size = grid_size
         self.theme_dir = theme_dir
         self.player_name = player_name or self._prompt_name()
+        self.difficulty = self._difficulty_from_grid(grid_size)
         self.configure(bg="#0f172a")  # slate-900
 
         # UI: header with status and reset
         header = Frame(self, bg="#0f172a")
         header.pack(side=TOP, fill=X, padx=16, pady=12)
 
-        self.status_var = StringVar(value=f"Jugador: {self.player_name} | Intentos: 0 | Aciertos: 0")
+        self.status_var = StringVar(value=f"Jugador: {self.player_name} | Dificultad: {self.difficulty} | Intentos: 0 | Aciertos: 0")
         lbl = Label(header, textvariable=self.status_var, fg="#e2e8f0", bg="#0f172a", font=("Lato", 14, "bold"))
         lbl.pack(side=LEFT)
 
@@ -38,9 +39,9 @@ class GameWindow(Toplevel):
         # Load images
         self.front_img = None  # back of card (common)
         self.card_images = []  # per pair
-        self.buttons: list[Button] = []
-        self.card_values: list[int] = []  # pair identifiers
-        self.revealed_indices: list[int] = []
+        self.buttons = []
+        self.card_values = []  # pair identifiers
+        self.revealed_indices = []
         self.lock_input = False
         self.attempts = 0
         self.matches = 0
@@ -59,6 +60,9 @@ class GameWindow(Toplevel):
         if not name:
             name = "Invitado"
         return name.strip() or "Invitado"
+
+    def _difficulty_from_grid(self, gs: int) -> str:
+        return "facil" if gs == 4 else "medio" if gs == 5 else "dificil"
 
     def _asset_paths(self):
         # choose a default back and N unique faces from theme dir
@@ -224,16 +228,18 @@ class GameWindow(Toplevel):
 
     def _score(self) -> int:
         total_pairs = len(self.card_values) // 2
-    # simple scoring: start from 1000 and subtract attempts beyond optimal
+        # simple scoring: start from 1000 and subtract attempts beyond optimal
         penalty = max(0, self.attempts - total_pairs)
         return max(0, 1000 - penalty * 20)
 
     def _update_status(self):
-        self.status_var.set(f"Jugador: {self.player_name} | Intentos: {self.attempts} | Aciertos: {self.matches} | Puntaje: {self._score()}")
+        self.status_var.set(
+            f"Jugador: {self.player_name} | Dificultad: {self.difficulty} | Intentos: {self.attempts} | Aciertos: {self.matches} | Puntaje: {self._score()}"
+        )
 
     def _win(self):
         score = self._score()
-        write_score(self.player_name, score)
+        write_score(self.player_name, score, difficulty=self.difficulty)
         # Custom modal popup with 'Salir' button
         popup = Toplevel(self)
         popup.title("¡Ganaste!")
