@@ -70,7 +70,7 @@ def launch_menu():
         if not app.player_name:
             name = simpledialog.askstring("Jugador", "Ingresa tu nombre para guardar tu puntaje:", parent=app)
             app.player_name = (name or "Invitado").strip() or "Invitado"
-        GameWindow(app, grid_size=4, player_name=app.player_name)
+        GameWindow(app, grid_size=6, player_name=app.player_name)
 
     def open_scores():
         ScoresWindow(app)
