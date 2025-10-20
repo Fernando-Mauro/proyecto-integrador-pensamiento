@@ -40,7 +40,7 @@ def launch_menu():
 
     # fondo opcional
     try:
-        image = Image.open('photos/nubes.jpg').resize((w, h))
+        image = Image.open('photos/fondo.jpeg').resize((w, h))
         bg_image = ImageTk.PhotoImage(image)
         bg_label = Label(frame, image=bg_image)
         bg_label.image = bg_image
@@ -70,18 +70,18 @@ def launch_menu():
         if not app.player_name:
             name = simpledialog.askstring("Jugador", "Ingresa tu nombre para guardar tu puntaje:", parent=app)
             app.player_name = (name or "Invitado").strip() or "Invitado"
-        GameWindow(app, grid_size=4, player_name=app.player_name)
+        GameWindow(app, grid_size=6, player_name=app.player_name)
 
     def open_scores():
         ScoresWindow(app)
 
-    empezar = Button(frame, text="Empezar", command=start_game, bg="#22c55e", fg="white", activebackground="#16a34a")
+    empezar = Button(frame, text="Empezar", command=start_game, bg="#0f172a", fg="white", activebackground="#16a34a")
     empezar.grid(column=1, row=1, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
 
-    puntajes = Button(frame, text="Puntajes máximos", command=open_scores, bg="#3b82f6", fg="white", activebackground="#2563eb")
+    puntajes = Button(frame, text="Puntajes máximos", command=open_scores, bg="#0f172a", fg="white", activebackground="#2563eb")
     puntajes.grid(column=1, row=2, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
 
-    salir = Button(frame, text="Salir", command=app.destroy, bg="#ef4444", fg="white", activebackground="#dc2626")
+    salir = Button(frame, text="Salir", command=app.destroy, bg="#0f172a", fg="white", activebackground="#dc2626")
     salir.grid(column=1, row=3, ipady=bipady, ipadx=bipadx, sticky='nswe', pady=20)
 
     fuente = font.Font(family='Lato', size=12)
